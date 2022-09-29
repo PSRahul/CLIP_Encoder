@@ -1,4 +1,5 @@
 import argparse
+import copy
 import os
 import shutil
 import sys
@@ -47,6 +48,7 @@ def set_logging(cfg):
 
 def get_groundtruths(dataset, show_image=False):
     gt = np.empty((0, 7))
+
     for index in range(len(dataset)):
         image_id = dataset.ids[index]
         image, anns = dataset[index]
@@ -77,7 +79,9 @@ def get_groundtruths(dataset, show_image=False):
     return gt
 
 def get_clip_embedding(dataset,class_id,class_name):
-    gt = np.empty((0, 7))
+    root = os.path.join("/home/psrahul/MasterThesis/datasets/BBoxGroundtruths",class_name)
+    os.makedirs(root,exist_ok=True)
+    counter=0
     for index in range(len(dataset)):
         image_id = dataset.ids[index]
         image, anns = dataset[index]
@@ -85,28 +89,16 @@ def get_clip_embedding(dataset,class_id,class_name):
         bounding_box_list = []
         class_list = []
         for ann in anns:
-            bounding_box_list.append(ann['bbox'])
-            class_list.append(ann['category_id'])
-
-        if (show_image):
-            bbox = bounding_box_list[0]
-            bbox = [int(x) for x in bbox]
-            print(bbox)
-            image = image[bbox[1]:bbox[1] + bbox[3], bbox[0]:bbox[0] + bbox[2], :]
-            plt.imshow(image)
-            plt.show()
-            break
-        image_id = np.array(image_id)
-        bounding_box_list = np.array(bounding_box_list)
-        image_id_list = np.ones((len(class_list), 1)) * image_id
-        scores_list = np.ones((len(class_list), 1))
-        class_list = np.array(class_list).reshape((len(class_list), 1))
-        # ["image_id", "bbox_y", "bbox_x", "w", "h", "score", "class_label"]
-        if (len(bounding_box_list != 0)):
-            gt_idx = np.hstack((image_id_list, bounding_box_list, scores_list, class_list))
-            gt = np.vstack((gt, gt_idx))
-    return gt
-
+            bbox=ann['bbox']
+            category_id=ann['category_id']
+            if(category_id==class_id) and (ann['difficult']==0):
+                bbox = [int(x) for x in bbox]
+                print(bbox)
+                image_cropped=copy.deepcopy(image)
+                image_cropped = image_cropped[bbox[1]:bbox[1] + bbox[3], bbox[0]:bbox[0] + bbox[2], :]
+                plt.imsave(os.path.join(root,str(counter)+".png"),image_cropped)
+                counter+=1
+                plt.close("all")
 def main(cfg):
     dataset_root = cfg["data"]["root"]
     dataset = CocoDetection(root=os.path.join(dataset_root, "data"),
@@ -119,9 +111,9 @@ def main(cfg):
         class_id_list.append(cat["id"])
         class_name_list.append(cat["name"])
 
-
-    gt = get_groundtruths(dataset)
-    print(gt)
+    for index in range(len(class_id_list)):
+        gt = get_clip_embedding(dataset,class_id_list[index],class_name_list[index])
+        print(gt)
 
 if __name__ == "__main__":
     args = get_args()
