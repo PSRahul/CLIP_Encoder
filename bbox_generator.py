@@ -11,7 +11,7 @@ import torch
 import yaml
 from torchvision.datasets import CocoDetection
 from yaml.loader import SafeLoader
-
+from tqdm import tqdm
 
 # matplotlib.use('Agg')
 
@@ -46,43 +46,12 @@ def set_logging(cfg):
     return log_file, checkpoint_dir
 
 
-def get_groundtruths(dataset, show_image=False):
-    gt = np.empty((0, 7))
-
-    for index in range(len(dataset)):
-        image_id = dataset.ids[index]
-        image, anns = dataset[index]
-        image = np.array(image)
-        bounding_box_list = []
-        class_list = []
-        for ann in anns:
-            bounding_box_list.append(ann['bbox'])
-            class_list.append(ann['category_id'])
-
-        if (show_image):
-            bbox = bounding_box_list[0]
-            bbox = [int(x) for x in bbox]
-            print(bbox)
-            image = image[bbox[1]:bbox[1] + bbox[3], bbox[0]:bbox[0] + bbox[2], :]
-            plt.imshow(image)
-            plt.show()
-            break
-        image_id = np.array(image_id)
-        bounding_box_list = np.array(bounding_box_list)
-        image_id_list = np.ones((len(class_list), 1)) * image_id
-        scores_list = np.ones((len(class_list), 1))
-        class_list = np.array(class_list).reshape((len(class_list), 1))
-        # ["image_id", "bbox_y", "bbox_x", "w", "h", "score", "class_label"]
-        if (len(bounding_box_list != 0)):
-            gt_idx = np.hstack((image_id_list, bounding_box_list, scores_list, class_list))
-            gt = np.vstack((gt, gt_idx))
-    return gt
 
 def get_clip_embedding(dataset,class_id,class_name):
-    root = os.path.join("/home/psrahul/MasterThesis/datasets/BBoxGroundtruths",class_name)
+    root = os.path.join("/home/psrahul/MasterThesis/datasets/BBoxGroundtruths/PASCAL_3_2/train/",class_name)
     os.makedirs(root,exist_ok=True)
     counter=0
-    for index in range(len(dataset)):
+    for index in tqdm(range(len(dataset))):
         image_id = dataset.ids[index]
         image, anns = dataset[index]
         image = np.array(image)
@@ -93,27 +62,26 @@ def get_clip_embedding(dataset,class_id,class_name):
             category_id=ann['category_id']
             if(category_id==class_id) and (ann['difficult']==0):
                 bbox = [int(x) for x in bbox]
-                print(bbox)
                 image_cropped=copy.deepcopy(image)
                 image_cropped = image_cropped[bbox[1]:bbox[1] + bbox[3], bbox[0]:bbox[0] + bbox[2], :]
                 plt.imsave(os.path.join(root,str(counter)+".png"),image_cropped)
                 counter+=1
                 plt.close("all")
+
 def main(cfg):
     dataset_root = cfg["data"]["root"]
     dataset = CocoDetection(root=os.path.join(dataset_root, "data"),
                             annFile=os.path.join(dataset_root, "labels.json"))
     class_name_list=[]
     class_id_list=[]
-    for index in range(len(dataset.coco.cats)):
-        print(index)
+    for index in tqdm(range(len(dataset.coco.cats))):
         cat = dataset.coco.cats[index]
         class_id_list.append(cat["id"])
         class_name_list.append(cat["name"])
 
-    for index in range(len(class_id_list)):
-        gt = get_clip_embedding(dataset,class_id_list[index],class_name_list[index])
-        print(gt)
+    for index in tqdm(range(len(class_id_list))):
+        get_clip_embedding(dataset,class_id_list[index],class_name_list[index])
+
 
 if __name__ == "__main__":
     args = get_args()
