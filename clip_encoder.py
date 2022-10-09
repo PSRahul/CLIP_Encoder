@@ -14,7 +14,7 @@ image_list = ["aeroplane.png",
 
 
 def main():
-    data_root="/home/psrahul/MasterThesis/datasets/BBoxGroundtruths/PASCAL_3_2/train/"
+    data_root="/home/psrahul/MasterThesis/datasets/BBoxGroundtruths/PASCAL_15_5/train/"
     class_names=sorted(os.listdir(data_root))
     with torch.no_grad():
         clip_model, clip_preprocess = clip.load("ViT-B/16", device="cuda")
@@ -36,7 +36,7 @@ def main():
 
         clip_embeddings=np.mean(clip_embeddings,axis=0)
 
-        np.save(os.path.join("/home/psrahul/MasterThesis/datasets/BBoxGroundtruths/PASCAL_3_2/train/",class_name+".npy"), clip_embeddings)
+        np.save(os.path.join("/home/psrahul/MasterThesis/datasets/BBoxGroundtruths/PASCAL_15_5/train/",class_name+".npy"), clip_embeddings)
 
 
 if __name__ == "__main__":

@@ -48,7 +48,7 @@ def set_logging(cfg):
 
 
 def get_clip_embedding(dataset,class_id,class_name):
-    root = os.path.join("/home/psrahul/MasterThesis/datasets/BBoxGroundtruths/PASCAL_3_2/train/",class_name)
+    root = os.path.join("/home/psrahul/MasterThesis/datasets/BBoxGroundtruths/PASCAL_15_5/train/",class_name)
     os.makedirs(root,exist_ok=True)
     counter=0
     for index in tqdm(range(len(dataset))):

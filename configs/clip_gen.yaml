@@ -1,5 +1,5 @@
 data:
-  root: "/home/psrahul/MasterThesis/datasets/PASCAL_3_2/base_classes/train/coco/"
+  root: "/home/psrahul/MasterThesis/datasets/PASCAL_15_5/novel_classes/train/coco/"
 prediction_path: "/home/psrahul/MasterThesis/repo/Phase5/Outputs/PASCAL_3_2_10/Unetresnet50/28092022_1307/bbox_predictions.npy"
 clip_embedding_path: "/home/psrahul/MasterThesis/datasets/PASCAL_2012_ZETA_CA/support_images/base_classes/val/clip_embeddings.npy"
 use_metric_data_path: False
